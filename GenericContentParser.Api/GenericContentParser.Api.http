@@ -1,0 +1,6 @@
+@GenericContentParser.Api_HostAddress = http://localhost:5170
+
+GET {{GenericContentParser.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
