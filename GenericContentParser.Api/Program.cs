@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<IContentDecoder, Base64ContentDecoder>();
 builder.Services.AddSingleton<InternalJsonContentParser>();
+builder.Services.AddSingleton<CsvContentParser>();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(namingPolicy: null, allowIntegerValues: false));

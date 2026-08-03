@@ -4,6 +4,7 @@ using GenericContentParser.Api.Services;
 using GenericContentParser.Api.Parsers;
 using GenericContentParser.Api.Enums;
 using System.Text.Json;
+using CsvHelper;
 
 namespace GenericContentParser.Api.Controllers;
 
@@ -13,11 +14,13 @@ public class ContentParserController : ControllerBase
 {
     private readonly IContentDecoder _contentDecoder;
     private readonly InternalJsonContentParser _internalJsonContentParser;
+    private readonly CsvContentParser _csvContentParser;
 
-    public ContentParserController(IContentDecoder contentDecoder, InternalJsonContentParser internalJsonContentParser)
+    public ContentParserController(IContentDecoder contentDecoder, InternalJsonContentParser internalJsonContentParser, CsvContentParser csvContentParser)
     {
         _contentDecoder = contentDecoder;
         _internalJsonContentParser = internalJsonContentParser;
+        _csvContentParser = csvContentParser;
     }
 
     [HttpPost("parse-content")]
@@ -40,12 +43,22 @@ public class ContentParserController : ControllerBase
                 });
             }
 
-            return Ok(new
+            if(request.Type == ContentFormat.Csv)
             {
-                type = request.Type, 
-                decodedContent
-            });
+                var records = _csvContentParser.Parse(decodedContent);
 
+                return Ok(new
+                {
+                    type = request.Type,
+                    processedCount = records.Count,
+                    data = records
+                });
+            }
+
+            return BadRequest(new
+            {
+                error = "Unsupported content type."
+            });
         }
         catch(FormatException)
         {
@@ -61,6 +74,13 @@ public class ContentParserController : ControllerBase
                 error = "Content is not valid JSON."
             });
         }
+        catch(CsvHelperException)
+        {
+            return BadRequest(new
+            {
+               error = "Content is not valid CSV." 
+            });
+        }
         catch(ArgumentException exception)
         {
             return BadRequest(new
@@ -68,5 +88,6 @@ public class ContentParserController : ControllerBase
                error = exception.Message 
             });
         }
+
     }
 }
