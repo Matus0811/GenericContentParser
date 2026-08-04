@@ -16,7 +16,10 @@ public class ContentParserController : ControllerBase
     private readonly InternalJsonContentParser _internalJsonContentParser;
     private readonly CsvContentParser _csvContentParser;
 
-    public ContentParserController(IContentDecoder contentDecoder, InternalJsonContentParser internalJsonContentParser, CsvContentParser csvContentParser)
+    public ContentParserController(
+        IContentDecoder contentDecoder,
+        InternalJsonContentParser internalJsonContentParser, 
+        CsvContentParser csvContentParser)
     {
         _contentDecoder = contentDecoder;
         _internalJsonContentParser = internalJsonContentParser;
@@ -29,7 +32,23 @@ public class ContentParserController : ControllerBase
     {
         try
         {
+            if (request.Type == ContentFormat.Unknown)
+            {
+                return BadRequest(new
+                {
+                   error = "Unsupported content type." 
+                });
+            }
+
             string decodedContent = _contentDecoder.DecodeBase64(request.Content);
+
+            if (string.IsNullOrWhiteSpace(decodedContent))
+            {
+                return BadRequest(new
+                {
+                    error = "Decoded content cannot be empty."
+                });
+            }
 
             if (request.Type == ContentFormat.InternalJson)
             {
