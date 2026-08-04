@@ -35,24 +35,30 @@ public class ContentParserController : ControllerBase
             {
                 var records = _internalJsonContentParser.Parse(decodedContent);
 
-                return Ok(new
+                ParseContentResponse response = new()
                 {
-                    type = request.Type,
-                    processedCount = records.Count,
-                    data = records
-                });
+                  Success = true,
+                  Type = request.Type,
+                  ProcessedCount = records.Count,
+                  Data = records  
+                };
+                
+                return Ok(response);
             }
 
             if(request.Type == ContentFormat.Csv)
             {
                 var records = _csvContentParser.Parse(decodedContent);
 
-                return Ok(new
+                ParseContentResponse response = new()
                 {
-                    type = request.Type,
-                    processedCount = records.Count,
-                    data = records
-                });
+                  Success = true,
+                  Type = request.Type,
+                  ProcessedCount = records.Count,
+                  Data = records  
+                };
+                
+                return Ok(response);
             }
 
             return BadRequest(new
